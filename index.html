@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TranscriptForge — YouTube Transcript Fetcher</title>
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
+    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 720px;
+            box-shadow: 0 25px 50px rgba(0, 0, , 0.3);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo h1 {
+            font-size: 2.2rem;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+
+        .logo h1 span { color: #ff4757; }
+
+        .logo p {
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 0.9rem 1.2rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: #ff4757;
+        }
+
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .input-group button {
+            padding: 0.9rem 1.8rem;
+            border: none;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #ff4757, #ff6b81);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            white-space: nowrap;
+        }
+
+        .input-group button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 71, 87, 0.4);
+        }
+
+        .input-group button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .message {
+            padding: 1rem 1.2rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .message.error {
+            background: rgba(255, 71, 87, 0.15);
+            border: 1px solid rgba(255, 71, 87, 0.3);
+            color: #ff6b81;
+            display: block;
+        }
+
+        .message.success {
+            background: rgba(46, 213, 115, 0.15);
+            border: 1px solid rgba(46, 213, 115, 0.3);
+            color: #2ed573;
+            display: block;
+        }
+
+        .message.info {
+            background: rgba(84, 160, 255, 0.15);
+            border: 1px solid rgba(84, 160, 255, 0.3);
+            color: #54a0ff;
+            display: block;
+        }
+
+        .transcript-output {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 1.5rem;
+            max-height: 450px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .transcript-output.visible { display: block; }
+
+        .transcript-output .video-title {
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .transcript-segment {
+            display: flex;
+            gap: 1rem;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .transcript-segment:last-child { border-bottom: none; }
+
+        .transcript-segment .timestamp {
+            color: #ff4757;
+            font-weight: 600;
+            font-size: 0.85rem;
+            min-width: 55px;
+            padding-top: 2px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .transcript-segment .text {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .loading.visible { display: block; }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #ff4757;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .transcript-output::-webkit-scrollbar { width: 8px; }
+        .transcript-output::-webkit-scrollbar-track { background: transparent; }
+        .transcript-output::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+
+        .spinner-text {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.4);
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>⚡ Transcript<span>Forge</span></h1>
+            <p>Fetch any YouTube video transcript — right in your browser</p>
+        </div>
+
+        <div class="input-group">
+            <input type="text" id="urlInput" placeholder="Paste a YouTube URL here..." autocomplete="off">
+            <button id="fetchBtn" onclick="fetchTranscript()">Get Transcript</button>
+        </div>
+
+        <div id="messageBox" class="message"></div>
+
+        <div id="loadingBox" class="loading">
+            <div class="spinner"></div>
+            <div class="spinner-text">Python engine warming up...<br>This may take a moment on first load.</div>
+        </div>
+
+        <div id="transcriptOutput" class="transcript-output">
+            <div class="video-title" id="videoTitle"></div>
+            <div id="segments"></div>
+        </div>
+    </div>
+
+    <script type="py" config='{"packages": ["micropip"]}'>
+import re
+import json
+import urllib.parse
+from pyodide.ffi import create_proxy
+from js import document, window, fetch
+
+CORS_PROXIES = [
+    "https://corsproxy.io/?url=",
+    "https://api.allorigins.win/raw?url=",
+    "https://api.codetabs.com/v1/proxy?quest=",
+]
+
+
+def is_valid_youtube_url(url):
+    """Validate that the URL is a proper YouTube video URL."""
+    patterns = [
+        r'^https?://(www\.)?youtube\.com/watch\?v=[\w-]+',
+        r'^https?://(www\.)?youtube\.com/embed/[\w-]+',
+        r'^https?://(www\.)?youtube\.com/shorts/[\w-]+',
+        r'^https?://youtu\.be/[\w-]+',
+    ]
+    return any(re.match(p, url.strip()) for p in patterns)
+
+
+def extract_video_id(url):
+    """Extract the 11-character video ID from various YouTube URL formats."""
+    patterns = [
+        r'(?:youtube\.com/watch\?v=)([\w-]{11})',
+        r'(?:youtu\.be/)([\w-]{11})',
+        r'(?:youtube\.com/embed/)([\w-]{11})',
+        r'(?:youtube\.com/shorts/)([\w-]{11})',
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, url)
+        if match:
+            return match.group(1)
+    return None
+
+
+def format_timestamp(seconds):
+    """Convert seconds to MM:SS or HH:MM:SS format."""
+    h = int(seconds // 3600)
+    m = int((seconds % 3600) // 60)
+    s = int(seconds % 60)
+    if h > 0:
+        return f"{h}:{m:02d}:{s:02d}"
+    return f"{m:02d}:{s:02d}"
+
+
+async def fetch_with_proxy(url):
+    """Fetch a URL through CORS proxies with fallback."""
+    encoded = urllib.parse.quote(url, safe='')
+
+    for proxy in CORS_PROXIES:
+        try:
+            proxy_url = proxy + encoded
+            resp = await fetch(proxy_url)
+            if resp.ok:
+                return await resp.text()
+        except Exception:
+            continue
+
+    raise Exception("PROXY_FAILED")
+
+
+async def get_video_title(video_id):
+    """Get video title using YouTube's oEmbed API (CORS-enabled)."""
+    oembed_url = f"https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v={video_id}&format=json"
+    try:
+        resp = await fetch(oembed_url)
+        if resp.ok:
+            data = json.loads(await resp.text())
+            return data.get("title", "")
+    except Exception:
+        pass
+    return ""
+
+
+async def fetch_transcript_data(video_id):
+    """
+    Fetch transcript using multiple methods with fallback.
+    """
+    # Method 1: Try YouTube's timedtext API directly (CORS-enabled)
+    for lang in ['en', 'en-US', 'en-GB']:
+        try:
+            timedtext_url = f"https://video.google.com/timedtext?lang={lang}&v={video_id}&fmt=json3"
+            resp = await fetch(timedtext_url)
+            if resp.ok:
+                data = await resp.text()
+                if data and data.strip() and len(data) > 10:
+                    return data
+        except Exception:
+            pass
+
+    # Method 2: Try through CORS proxy
+    for lang in ['en', 'en-US', 'en-GB']:
+        try:
+            timedtext_url = f"https://video.google.com/timedtext?lang={lang}&v={video_id}&fmt=json3"
+            data = await fetch_with_proxy(timedtext_url)
+            if data and data.strip() and len(data) > 10:
+                return data
+        except Exception:
+            pass
+
+    raise Exception("ALL_METHODS_FAILED")
+
+
+async def extract_caption_data(data):
+    """Extract caption data from Innertube API response."""
+    # Check playability
+    playability = data.get("playabilityStatus", {})
+    status = playability.get("status", "")
+    reason = playability.get("reason", "")
+
+    if status == "LOGIN_REQUIRED" or "LOGIN_REQUIRED" in reason:
+        raise Exception("AGE_RESTRICTED")
+    if status == "ERROR":
+        raise Exception("VIDEO_UNAVAILABLE")
+    if status == "UNPLAYABLE":
+        raise Exception("UNPLAYABLE")
+
+    # Extract caption tracks
+    captions = data.get("captions", {})
+    renderer = captions.get("playerCaptionsTracklistRenderer", {})
+    caption_tracks = renderer.get("captionTracks", [])
+
+    if not caption_tracks:
+        raise Exception("NO_CAPTIONS")
+
+    # Prefer English
+    track = None
+    for t in caption_tracks:
+        if t.get("languageCode", "") == "en":
+            track = t
+            break
+    if not track:
+        track = caption_tracks[0]
+
+    # Fetch caption data
+    caption_url = track.get("baseUrl", "")
+    if not caption_url:
+        raise Exception("NO_CAPTIONS")
+
+    if "json3" not in caption_url:
+        caption_url += "&fmt=json3"
+
+    # Try direct fetch first
+    try:
+        cap_resp = await fetch(caption_url)
+        if cap_resp.ok:
+            return await cap_resp.text()
+    except Exception:
+        pass
+
+    # Through CORS proxy
+    cap_data = await fetch_with_proxy(caption_url)
+    return cap_data
+
+
+def parse_transcript(raw_data):
+    """Parse YouTube timedtext JSON3 format into segments."""
+    try:
+        data = json.loads(raw_data)
+    except json.JSONDecodeError:
+        # Try XML parsing as fallback
+        import xml.etree.ElementTree as ET
+        try:
+            root = ET.fromstring(raw_data)
+            segments = []
+            for p in root.findall('.//p'):
+                start = float(p.get('t', 0)) / 1000
+                dur = float(p.get('d', 0)) / 1000
+                text = ''.join(p.itertext()).replace('&#39;', "'").replace('&quot;', '"').replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>')
+                if text.strip():
+                    segments.append({"start": start, "duration": dur, "text": text.strip()})
+            return segments
+        except Exception:
+            raise Exception("PARSE_ERROR")
+
+    events = data.get('events', [])
+    segments = []
+    for event in events:
+        if 'segs' not in event:
+            continue
+        start_ms = event.get('tStartMs', 0)
+        text_parts = []
+        for seg in event['segs']:
+            text_parts.append(seg.get('utf8', ''))
+        text = ''.join(text_parts).strip()
+        if text:
+            segments.append({
+                "start": start_ms / 1000,
+                "duration": event.get('dDurationMs', 0) / 1000,
+                "text": text
+            })
+    return segments
+
+
+async def handle_fetch():
+    """Main handler called from JavaScript."""
+    msg_box = document.getElementById("messageBox")
+    loading_box = document.getElementById("loadingBox")
+    output_box = document.getElementById("transcriptOutput")
+    segments_div = document.getElementById("segments")
+    title_div = document.getElementById("videoTitle")
+    fetch_btn = document.getElementById("fetchBtn")
+    url_input = document.getElementById("urlInput")
+
+    # Reset UI
+    msg_box.className = "message"
+    msg_box.textContent = ""
+    output_box.classList.remove("visible")
+    loading_box.classList.add("visible")
+    fetch_btn.disabled = True
+
+    try:
+        # Step 1: Get URL from input
+        url = url_input.value.strip()
+
+        # Step 2: Validate URL
+        if not url:
+            show_message("Please enter a YouTube URL.", "error")
+            return
+
+        if not is_valid_youtube_url(url):
+            show_message("That doesn't look like a valid YouTube URL. Please paste a link like https://www.youtube.com/watch?v=...", "error")
+            return
+
+        # Step 3: Extract video ID
+        video_id = extract_video_id(url)
+        if not video_id:
+            show_message("Could not extract a video ID from that URL. Please check the link and try again.", "error")
+            return
+
+        # Step 4: Get video title (non-blocking)
+        video_title = await get_video_title(video_id)
+
+        # Step 5: Fetch transcript
+        raw_data = await fetch_transcript_data(video_id)
+        segments = parse_transcript(raw_data)
+
+        if not segments:
+            show_message("This video doesn't have any transcripts available.", "error")
+            return
+
+        # Step 6: Display
+        display_title = video_title if video_title else f"Transcript — {len(segments)} segments"
+        title_div.textContent = display_title
+        segments_div.innerHTML = ""
+
+        for seg in segments:
+            row = document.createElement("div")
+            row.className = "transcript-segment"
+
+            ts_span = document.createElement("span")
+            ts_span.className = "timestamp"
+            ts_span.textContent = format_timestamp(seg["start"])
+
+            text_span = document.createElement("span")
+            text_span.className = "text"
+            text_span.textContent = seg["text"]
+
+            row.appendChild(ts_span)
+            row.appendChild(text_span)
+            segments_div.appendChild(row)
+
+        output_box.classList.add("visible")
+        show_message(f"Transcript fetched successfully — {len(segments)} segments.", "success")
+
+    except Exception as e:
+        error_msg = str(e)
+        # Map internal errors to generic user-friendly messages
+        generic_messages = {
+            "VIDEO_UNAVAILABLE": "Sorry, we couldn't find that video. Please check the URL and try again.",
+            "AGE_RESTRICTED": "Sorry, this video is age-restricted and its transcript can't be fetched.",
+            "UNPLAYABLE": "Sorry, this video is not playable and its transcript can't be fetched.",
+            "NO_CAPTIONS": "Sorry, this video doesn't have any captions or transcripts available.",
+            "PARSE_ERROR": "Sorry, something went wrong while processing the transcript. Please try again.",
+            "PROXY_FAILED": "Sorry, there was a network error while fetching the transcript. Please check your connection and try again.",
+            "ALL_METHODS_FAILED": "Sorry, there was a network error while fetching the transcript. Please check your connection and try again.",
+        }
+
+        user_message = None
+        for key, msg in generic_messages.items():
+            if key in error_msg:
+                user_message = msg
+                break
+
+        if not user_message:
+            user_message = "Sorry, something went wrong while fetching the transcript. Please try again."
+
+        show_message(user_message, "error")
+
+    finally:
+        loading_box.classList.remove("visible")
+        fetch_btn.disabled = False
+
+
+def show_message(text, msg_type):
+    """Display a message to the user."""
+    msg_box = document.getElementById("messageBox")
+    msg_box.className = f"message {msg_type}"
+    msg_box.textContent = text
+
+
+# Expose to JavaScript
+window.fetchTranscript = create_proxy(handle_fetch)
+    </script>
+
+    <script>
+        async function fetchTranscript() {
+            await window.fetchTranscript();
+        }
+
+        // Allow Enter key to submit
+        document.getElementById("urlInput").addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+                fetchTranscript();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "name": "transcriptforge",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "node build.js",
+    "test": "node --test"
+  },
+  "keywords": [],
+  "author": "",
+  "description": "",
+  "dependencies": {
+    "fast-xml-parser": "^5.11.1",
+    "he": "^1.2.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  },
+  "private": true,
+  "type": "module"
+}

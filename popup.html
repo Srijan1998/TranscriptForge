@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TranscriptForge</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            width: 400px;
+            min-height: 300px;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
+        }
+
+        .header {
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 1.3rem;
+            letter-spacing: -0.5px;
+        }
+
+        .header h1 span { color: #ff4757; }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+
+        .content {
+            padding: 1.2rem 1.5rem;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 0.7rem 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-size: 0.85rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: #ff4757;
+        }
+
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .input-group button {
+            padding: 0.7rem 1.2rem;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #ff4757, #ff6b81);
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            white-space: nowrap;
+        }
+
+        .input-group button:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 20px rgba(255, 71, 87, 0.4);
+        }
+
+        .input-group button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .message {
+            padding: 0.7rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            font-size: 0.8rem;
+            display: none;
+        }
+
+        .message.error {
+            background: rgba(255, 71, 87, 0.15);
+            border: 1px solid rgba(255, 71, 87, 0.3);
+            color: #ff6b81;
+            display: block;
+        }
+
+        .message.success {
+            background: rgba(46, 213, 115, 0.15);
+            border: 1px solid rgba(46, 213, 115, 0.3);
+            color: #2ed573;
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .loading.visible { display: block; }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #ff4757;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 0.75rem;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-text {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .transcript-output {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .transcript-output.visible { display: block; }
+
+        .transcript-output .video-title {
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .transcript-segment {
+            display: flex;
+            gap: 0.75rem;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .transcript-segment:last-child { border-bottom: none; }
+
+        .transcript-segment .timestamp {
+            color: #ff4757;
+            font-weight: 600;
+            font-size: 0.75rem;
+            min-width: 45px;
+            padding-top: 1px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .transcript-segment .text {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+
+        .transcript-output::-webkit-scrollbar { width: 6px; }
+        .transcript-output::-webkit-scrollbar-track { background: transparent; }
+        .transcript-output::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+        }
+
+        .footer {
+            padding: 0.75rem 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .footer p {
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.7rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚡ Transcript<span>Forge</span></h1>
+        <p>YouTube transcripts and local summaries</p>
+    </div>
+
+    <div class="content">
+        <div class="input-group">
+            <input type="text" id="urlInput" placeholder="Paste YouTube URL..." autocomplete="off">
+            <button id="fetchBtn">Fetch</button>
+        </div>
+
+        <label for="languages">Preferred languages (in order)</label>
+        <input id="languages" value="en" placeholder="en, hi" style="width:100%;padding:8px;margin:8px 0 12px" aria-label="Preferred language codes">
+        <div id="messageBox" class="message" role="status"></div>
+
+        <div id="loadingBox" class="loading">
+            <div class="spinner"></div>
+            <div class="loading-text">Fetching transcript...</div>
+        </div>
+
+        <div id="transcriptOutput" class="transcript-output">
+            <div class="video-title" id="videoTitle"></div>
+            <h3 style="font-size:14px;margin-bottom:8px">Summary · selected excerpts</h3>
+            <ul id="summary" style="padding-left:18px;font-size:13px;line-height:1.6;margin-bottom:16px"></ul>
+            <h3 style="font-size:14px;margin-bottom:8px">Full transcript</h3>
+            <div id="segments"></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>TranscriptForge v1.0 — Chrome Extension</p>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
