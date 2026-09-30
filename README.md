@@ -8,6 +8,7 @@ Chrome Manifest V3 extension for YouTube transcripts and local extractive summar
 2. Choose **Load unpacked** and select this directory (the one containing `manifest.json`).
 3. Open the extension, paste a YouTube URL or video ID, and click **Fetch**. The active YouTube tab is filled in automatically.
 4. Language codes are tried in order, for example `hi, en`. Within each language, manual captions are preferred over automatic captions.
+5. After fetching, click **ChatGPT**, **Claude**, or **Gemini** to open a new browser tab with your prompt. Short transcripts are pre-filled directly into ChatGPT and Claude, while longer transcripts and Gemini automatically copy the formatted prompt to your clipboard ready for quick pasting (`Ctrl+V` / `Cmd+V`).
 
 The checked-in `dist/background.js` is bundled and ready to load. After changing source files, run `npm ci`, `npm test`, and `npm run build`, then reload the extension in Chrome.
 

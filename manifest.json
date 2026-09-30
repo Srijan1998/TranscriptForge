@@ -3,7 +3,7 @@
   "name": "TranscriptForge",
   "version": "1.0.0",
   "description": "Fetch YouTube video transcripts with ease",
-  "permissions": ["activeTab", "cookies", "storage", "declarativeNetRequestWithHostAccess"],
+  "permissions": ["activeTab", "cookies", "storage", "declarativeNetRequestWithHostAccess", "clipboardWrite", "notifications"],
   "background": { "service_worker": "dist/background.js", "type": "module" },
   "host_permissions": [
     "https://*.youtube.com/*"

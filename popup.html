@@ -185,6 +185,133 @@
             border-radius: 3px;
         }
 
+        .ai-actions-container {
+            margin-bottom: 1rem;
+            padding: 0.65rem 0.8rem;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+        }
+
+        .ai-actions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .ai-actions-title {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 600;
+        }
+
+        .copy-prompt-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-prompt-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .ai-btn-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .ai-btn {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            padding: 0.5rem 0.4rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.06);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .ai-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .ai-btn-chatgpt:hover {
+            background: rgba(16, 163, 127, 0.2);
+            border-color: #10a37f;
+            color: #10a37f;
+            box-shadow: 0 3px 10px rgba(16, 163, 127, 0.25);
+        }
+
+        .ai-btn-claude:hover {
+            background: rgba(217, 119, 6, 0.2);
+            border-color: #d97706;
+            color: #f59e0b;
+            box-shadow: 0 3px 10px rgba(217, 119, 6, 0.25);
+        }
+
+        .ai-btn-gemini:hover {
+            background: rgba(66, 133, 244, 0.2);
+            border-color: #4285f4;
+            color: #60a5fa;
+            box-shadow: 0 3px 10px rgba(66, 133, 244, 0.25);
+        }
+
+        .ai-btn:active {
+            transform: translateY(0);
+        }
+
+        .ai-icon {
+            flex-shrink: 0;
+        }
+
+        .ai-status {
+            display: none;
+            margin-top: 0.6rem;
+            padding: 0.5rem 0.75rem;
+            background: rgba(46, 213, 115, 0.15);
+            border: 1px solid rgba(46, 213, 115, 0.35);
+            border-radius: 6px;
+            color: #2ed573;
+            font-size: 0.75rem;
+            line-height: 1.4;
+            animation: fadeIn 0.2s ease-in;
+        }
+
+        .ai-status.visible {
+            display: block;
+        }
+
+        .ai-status.error {
+            background: rgba(255, 71, 87, 0.15);
+            border-color: rgba(255, 71, 87, 0.35);
+            color: #ff6b81;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-3px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .footer {
             padding: 0.75rem 1.5rem;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -220,6 +347,41 @@
 
         <div id="transcriptOutput" class="transcript-output">
             <div class="video-title" id="videoTitle"></div>
+
+            <div class="ai-actions-container">
+                <div class="ai-actions-header">
+                    <span class="ai-actions-title">Open &amp; Summarize with:</span>
+                    <button id="btnCopyPrompt" class="copy-prompt-btn" title="Copy full prompt and transcript to clipboard">
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        <span id="copyPromptLabel">Copy Prompt</span>
+                    </button>
+                </div>
+                <div class="ai-btn-group">
+                    <button id="btnChatGPT" class="ai-btn ai-btn-chatgpt" title="Summarize with ChatGPT">
+                        <svg class="ai-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        <span class="ai-btn-label">ChatGPT</span>
+                    </button>
+                    <button id="btnClaude" class="ai-btn ai-btn-claude" title="Summarize with Claude">
+                        <svg class="ai-icon" viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
+                            <path d="M12 2l2.4 7.4h7.6l-6.1 4.5 2.3 7.1-6.2-4.5-6.2 4.5 2.3-7.1-6.1-4.5h7.6z"/>
+                        </svg>
+                        <span class="ai-btn-label">Claude</span>
+                    </button>
+                    <button id="btnGemini" class="ai-btn ai-btn-gemini" title="Summarize with Gemini">
+                        <svg class="ai-icon" viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
+                            <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"></path>
+                        </svg>
+                        <span class="ai-btn-label">Gemini</span>
+                    </button>
+                </div>
+                <div id="aiStatus" class="ai-status" role="status"></div>
+            </div>
+
             <h3 style="font-size:14px;margin-bottom:8px">Summary · selected excerpts</h3>
             <ul id="summary" style="padding-left:18px;font-size:13px;line-height:1.6;margin-bottom:16px"></ul>
             <h3 style="font-size:14px;margin-bottom:8px">Full transcript</h3>
