@@ -1,8 +1,25 @@
 # TranscriptForge
 
-Chrome Manifest V3 extension for YouTube transcripts and local extractive summaries.
+YouTube transcripts, local extractive summaries, and AI summarization — available as both a **Chrome Manifest V3 Extension** and an **Ad-Supported Windows Desktop App**.
 
-## Install
+## Windows Desktop App (Ad-Supported)
+
+TranscriptForge Desktop runs natively on Windows using Electron, with full YouTube transcript fetching, real-time segment search, one-click AI prompts (ChatGPT, Claude, Gemini), and built-in ad/sponsor banner monetization.
+
+### Running the Desktop App
+
+```bash
+npm run desktop
+```
+
+### Ad & Monetization Configuration
+
+Ad units are configured in [`desktop/ad-config.js`](file:///c:/Users/Victus/OneDrive/Desktop/TranscriptForge/desktop/ad-config.js):
+- **Mode `sponsor`**: Built-in rotating affiliate/sponsored cards (AI tools, VPNs, courses) that pay via PayPal or direct deposit.
+- **Mode `network`**: Paste your 728x90 banner or in-page script tag from ad networks like **Adsterra**, **Monetag**, or **EthicalAds** (no Stripe required; payouts via PayPal, Wire, or Crypto).
+- **Interstitial Ad**: Can be toggled on/off or configured by frequency (e.g., every 2 fetches) via `interstitialFrequency`.
+
+## Chrome Extension Install
 
 1. Open `chrome://extensions` and enable **Developer mode**.
 2. Choose **Load unpacked** and select this directory (the one containing `manifest.json`).

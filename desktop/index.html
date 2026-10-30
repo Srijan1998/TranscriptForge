@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TranscriptForge — Desktop</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Top App Header -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-icon">⚡</div>
+      <div class="brand-title">Transcript<span>Forge</span></div>
+      <span class="brand-badge">Desktop Edition</span>
+    </div>
+    <div class="app-meta">
+      <span id="appVersion">v1.0.0</span> · YouTube Transcripts &amp; AI Summaries
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-container">
+
+    <!-- Input Card -->
+    <section class="search-card">
+      <div class="input-row">
+        <div class="url-input-wrapper">
+          <input type="text" id="urlInput" class="url-input" placeholder="Paste YouTube URL or Video ID (e.g., https://www.youtube.com/watch?v=...)" autocomplete="off">
+        </div>
+        <div class="lang-input-wrapper">
+          <input type="text" id="langInput" class="lang-input" value="en" placeholder="Languages (en, hi)" title="Preferred languages in order">
+        </div>
+        <button id="fetchBtn" class="fetch-btn">
+          <span>Fetch Transcript</span>
+        </button>
+      </div>
+
+      <div id="statusBanner" class="status-banner" role="status"></div>
+    </section>
+
+    <!-- Loading State -->
+    <div id="loadingBox" class="loading-box">
+      <div class="spinner"></div>
+      <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">Fetching transcript from YouTube...</p>
+    </div>
+
+    <!-- Results Workspace -->
+    <section id="resultsWorkspace" class="results-workspace">
+      
+      <!-- Left Panel: Video Info, AI Action Hub, Extractive Summary -->
+      <div class="left-panel">
+        <div class="video-card">
+          <h2 id="videoTitle" class="video-title">Video Title</h2>
+          <div class="video-meta">
+            <span id="metaLang">Language: en</span>
+            <span id="metaSegments">Segments: 0</span>
+          </div>
+        </div>
+
+        <!-- AI Action Hub -->
+        <div class="ai-hub">
+          <div class="ai-hub-header">
+            <span class="ai-hub-title">Open &amp; Summarize with AI</span>
+            <button id="btnCopyPrompt" class="copy-prompt-btn" title="Copy full prompt and transcript">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span>Copy Prompt</span>
+            </button>
+          </div>
+
+          <div class="ai-btn-grid">
+            <button id="btnChatGPT" class="ai-btn chatgpt" title="Summarize in ChatGPT">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span>ChatGPT</span>
+            </button>
+
+            <button id="btnClaude" class="ai-btn claude" title="Summarize in Claude">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                <path d="M12 2l2.4 7.4h7.6l-6.1 4.5 2.3 7.1-6.2-4.5-6.2 4.5 2.3-7.1-6.1-4.5h7.6z"/>
+              </svg>
+              <span>Claude</span>
+            </button>
+
+            <button id="btnGemini" class="ai-btn gemini" title="Summarize in Gemini">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"></path>
+              </svg>
+              <span>Gemini</span>
+            </button>
+          </div>
+
+          <div id="aiStatusMsg" class="ai-status-msg" role="status"></div>
+        </div>
+
+        <!-- Local Extractive Summary -->
+        <div class="summary-card">
+          <h3 class="card-title">Key Excerpts (Extractive Summary)</h3>
+          <ul id="summaryList" class="summary-list"></ul>
+        </div>
+      </div>
+
+      <!-- Right Panel: Full Transcript & Real-Time Filter -->
+      <div class="right-panel">
+        <div class="transcript-header">
+          <h3 class="card-title" style="margin-bottom:0">Full Transcript</h3>
+          <input type="text" id="searchSegments" class="search-segments" placeholder="Search transcript...">
+        </div>
+        <div id="segmentsScroll" class="segments-scroll"></div>
+      </div>
+
+    </section>
+
+    <!-- Bottom Ad / Sponsor Banner Unit -->
+    <aside id="adBannerContainer" class="ad-banner-unit">
+      <!-- Injected dynamically from ad-config.js -->
+    </aside>
+
+  </main>
+
+  <!-- Interstitial Ad Modal -->
+  <div id="adModalOverlay" class="ad-modal-overlay">
+    <div class="ad-modal-card">
+      <button id="modalCloseBtn" class="ad-modal-close-btn" title="Close">✕</button>
+      <div class="ad-modal-label">Sponsored Spotlight</div>
+      <div id="modalBadge" class="ad-badge emerald" style="display:inline-block; margin-bottom:0.75rem;">Top Pick</div>
+      <h3 id="modalTitle" class="ad-modal-title">Sponsor Title</h3>
+      <p id="modalDesc" class="ad-modal-desc">Sponsor description...</p>
+      <button id="modalCtaBtn" class="ad-modal-cta">Check it out ↗</button>
+      <div id="modalSkipBtn" class="ad-modal-skip">Continue to Transcript</div>
+    </div>
+  </div>
+
+  <script type="module" src="renderer.js"></script>
+</body>
+</html>
